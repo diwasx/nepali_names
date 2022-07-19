@@ -1,6 +1,8 @@
 #!/bin/python3
 from os import listdir
+import sys
 import pandas as pd
+import numpy as np
 
 # FUNCITON TO EXTRACT CSV FILES
 def find_csv_filenames(path_to_dir, suffix=".csv" ):
@@ -12,26 +14,53 @@ files = find_csv_filenames("data/")
 # Adding the DataFrames to an list
 dfs = [pd.read_csv(x) for x in files]
 
-
 # Empty List for names
 fname = []
 mname = []
 lname = []
 
-# Looping Through DataFrames
+# Data Cleaning and preprocessing
+tdf = pd.DataFrame()
 for df in dfs:
-    for i in df['student_name'].str.split(' ', expand=True)[0]:
-        fname.append(i.strip().lower())
+    m = df['student_name'].str.replace('   ',' ').str.replace('  ', ' ').str.split(' ', expand=True)
+    tdf = pd.concat([tdf, m], axis=0)
 
-    for i in df['student_name'].str.split(' ', expand=True)[1]:
-        mname.append(i.strip().lower())
+# tdf.to_csv('tmp.csv', index=False)
 
-    for i in df['student_name'].str.split(' ', expand=True)[2]:
-        try:
-            lname.append(i.strip().lower())
-        except:
-            lname.append(i)
+tdf = tdf.fillna('').values
 
+# Condition for extracting First, Middle and Last names
+for x in tdf:
+    x = list(x)
+    x = list(filter(None, x))
+    print(x)
+    
+    if len(x) == 1:
+        fname.append(x[0].strip().lower())
+
+    elif len(x) == 2:
+        fname.append(x[0].strip().lower())
+        lname.append(x[1].strip().lower())
+
+    elif len(x) == 3:
+        fname.append(x[0].strip().lower())
+        mname.append(x[1].strip().lower())
+        lname.append(x[2].strip().lower())
+
+    elif len(x) == 4:
+        fname.append(x[0].strip().lower())
+        mname.append(x[1].strip().lower())
+        mname.append(x[2].strip().lower())
+        lname.append(x[3].strip().lower())
+
+    elif len(x) == 5:
+        fname.append(x[0].strip().lower())
+        mname.append(x[1].strip().lower())
+        mname.append(x[2].strip().lower())
+        mname.append(x[3].strip().lower())
+        lname.append(x[4].strip().lower())
+
+    
 # Removing Duplicates by converting to SET
 fname = set(fname)
 mname = set(mname)
